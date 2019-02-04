@@ -62,3 +62,31 @@ def load_data(version):
   print('data loaded from ' + path)
 
   return data_train_val, data_test
+
+
+def get_data_generator(data, batch_size, sequence_length, training=True):
+  batch_x = np.zeros((batch_size, sequence_length, data_train_transformed.shape[1]))
+  if return_sequences:
+    batch_y = np.zeros((batch_size, sequence_length, 1))
+  else:
+    batch_y = np.zeros((batch_size, 1))
+
+  # -1 because outputs are shifted by +1
+  if training:
+    # random sample from training data
+    rand_inds = np.random.randint(0, data.shape[0] - sequence_length - 1, batch_size)
+  else:
+    # not random, chronological
+    rand_inds = np.arange(start=0, step=sequence_length, stop=data.shape[0] - sequence_length - 1)
+
+  while True:
+    for i, idx in enumerate(rand_inds):
+      end_idx = idx + sequence_length
+      batch_x[i] = data[idx:end_idx,:]
+
+      if return_sequences:
+        batch_y[i] = data[idx + 1:end_idx + 1, -1, np.newaxis]
+      else:
+        batch_y[i] = data[end_idx, -1]
+
+    yield batch_x, batch_y
