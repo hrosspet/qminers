@@ -13,7 +13,7 @@ from sklearn.model_selection import GridSearchCV
 from qminers.ndscaler import NDScaler
 
 from sklearn.model_selection import KFold
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_squared_error
 
 from keras.callbacks import ModelCheckpoint
 from keras.models import Model
@@ -173,15 +173,19 @@ def train_best_model(data_train, data_val, model_params, model_weights_path):
 
 def eval_model(model, model_params, scalers, data):
   # transform data
-  data = transform_data(scalers, *data)
+  data_x_transformed, _ = transform_data(scalers, *data)
 
-  res = model.evaluate(*data)
+  # res = model.evaluate(*data)
+  y_pred = model.predict(data_x_transformed)
+  y_pred = scalers['y'].inverse_transform(y_pred)
+  res = {
+    'r2': r2_score(data[1], y_pred),
+    'mse': mean_squared_error(data[1], y_pred),
+  }
 
   # log results
-  res = dict(zip([model_params['loss'], 'mse'], res))
   res['model_params'] = model_params
   res['scalers'] = scalers
-  res['r2'] = evaluate_r2(model, *data)
   return res
 
 
@@ -210,11 +214,6 @@ def eval_cv(n_splits, data, model_params, model_weights_path='/tmp/weights_%d.hd
     results.loc[i, :] = eval_fold(data_train, data_val, model_params, model_weights_path % i)
 
   return results
-
-
-def evaluate_r2(model, val_x, val_y):
-  y_pred = model.predict(val_x)
-  return r2_score(val_y, y_pred)
 
 
 def get_default_nn_params(data_dim):
