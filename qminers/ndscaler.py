@@ -38,3 +38,6 @@ class NDScaler(TransformerMixin):
         if len(X.shape) >= 2:
             X = X.reshape(-1, *self._orig_shape)
         return X
+
+    def inverse_transform(self, X):
+        return self._scaler.inverse_transform(X)

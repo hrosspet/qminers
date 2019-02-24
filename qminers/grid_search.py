@@ -133,8 +133,12 @@ def fit_scalers(scaler_class, data_x, data_y):
   return {'x': fit_scaler(scaler_class, data_x), 'y': fit_scaler(scaler_class, data_y)}
 
 
-def transform_data(scalers, train_x, train_y, val_x, val_y):
-  return (scalers['x'].transform(train_x), scalers['y'].transform(train_y)), (scalers['x'].transform(val_x), scalers['y'].transform(val_y))
+def transform_data(scalers, data_x, data_y):
+  return scalers['x'].transform(data_x), scalers['y'].transform(data_y)
+
+
+def transform_train_val_data(scalers, train_x, train_y, val_x, val_y):
+  return transform_data(scalers, train_x, train_y), transform_data(scalers, val_x, val_y)
 
 
 def select_fold(train, val, data):
@@ -146,7 +150,7 @@ def train_best_model(data_train, data_val, model_params, model_weights_path):
   scalers = fit_scalers(model_params['transformer_class'], *data_train)
 
   # transform data
-  data_train, data_val = transform_data(scalers, *data_train, *data_val)
+  data_train, data_val = transform_train_val_data(scalers, *data_train, *data_val)
 
   # create model checkpointer to find the best model
   checkpointer = ModelCheckpoint(
@@ -167,18 +171,26 @@ def train_best_model(data_train, data_val, model_params, model_weights_path):
   return scalers, model
 
 
-def eval_fold(data_train, data_val, model_params, model_weights_path):
-  # get the best model
-  scalers, model = train_best_model(data_train, data_val, model_params, model_weights_path)
+def eval_model(model, model_params, scalers, data):
+  # transform data
+  data = transform_data(scalers, *data)
 
-  # evaluate
-  res = model.evaluate(*data_val)
+  res = model.evaluate(*data)
 
   # log results
   res = dict(zip([model_params['loss'], 'mse'], res))
   res['model_params'] = model_params
   res['scalers'] = scalers
-  res['r2'] = evaluate_r2(model, *data_val)
+  res['r2'] = evaluate_r2(model, *data)
+  return res
+
+
+def eval_fold(data_train, data_val, model_params, model_weights_path):
+  # get the best model
+  scalers, model = train_best_model(data_train, data_val, model_params, model_weights_path)
+
+  # evaluate
+  res = eval_model(model, model_params, scalers, data_val)
 
   return res
 
