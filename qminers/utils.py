@@ -147,7 +147,7 @@ def save_data(data_train_val, data_test, version):
   print('data saved to ' + path)
 
 
-def process_results(results, data_preparation_functions):
+def process_results(results, data_preparation_functions, model_names):
 
   fig, ax = plt.subplots(len(data_preparation_functions), 2, figsize=(10, 10))
 
@@ -160,10 +160,12 @@ def process_results(results, data_preparation_functions):
     ax[i, 0].boxplot(r2)
     ax[i, 0].set_title(name + ' r2')
     ax[i, 0].set_ylim([-2.5, 1])
+    ax[i, 0].set_xticklabels(model_names, rotation=45)
 
     ax[i, 1].boxplot(mse)
     ax[i, 1].set_title(name + ' mse');
-    ax[i, 1].set_ylim([0, 5e16])
+    ax[i, 1].set_ylim([0, 1.25e16])
+    ax[i, 1].set_xticklabels(model_names, rotation=45)
 
     plt.tight_layout()
 

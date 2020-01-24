@@ -31,6 +31,8 @@ def extract_res_cross_validation(cv_results_list, data):
   results['r2'] = np.array(results['r2']).T
   results['mse'] = np.array(results['mse']).T
 
+  results['best_r2'] = max_r2
+
   # now retrain the best model
 
   # shuffle, because we want the best model given the data

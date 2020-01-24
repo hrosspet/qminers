@@ -46,7 +46,6 @@ def get_transformers():
   # return [MinMaxScaler(), RobustScaler(), StandardScaler()]
   return [MinMaxScaler()]
 
-
 def get_classic_models():
   # first add baseline
   models = [BaselineRegressor()]

@@ -11,7 +11,7 @@ CONFIG = {
     'EPOCHS': 1000,
     'MODEL_PARAMS': {
         'batch_size': 32,
-        'lr': 1e-4,
+        'lr': 1e-3,
         'loss': 'mae',
         'output_dim': 1,
     }
